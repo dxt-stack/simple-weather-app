@@ -90,54 +90,56 @@ export function PlaceSearch({ onSelect, onUseLocation, locating }: PlaceSearchPr
 
   return (
     <div ref={rootRef} className="relative w-full">
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        />
-        <Input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => {
-            if (results.length > 0) setOpen(true);
-          }}
-          onKeyDown={onKeyDown}
-          placeholder="Search any city…"
-          aria-label="Search for a city"
-          role="combobox"
-          aria-expanded={open}
-          aria-controls="place-search-listbox"
-          aria-autocomplete="list"
-          className="h-10 rounded-md border-border/80 bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground/70"
-        />
-        {busy && (
-          <Loader2
-            className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
+          <Input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => {
+              if (results.length > 0) setOpen(true);
+            }}
+            onKeyDown={onKeyDown}
+            placeholder="Search any city…"
+            aria-label="Search for a city"
+            role="combobox"
+            aria-expanded={open}
+            aria-controls="place-search-listbox"
+            aria-autocomplete="list"
+            className="h-10 rounded-md border-border/80 bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground/70"
+          />
+          {busy && (
+            <Loader2
+              className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
+              aria-hidden="true"
+            />
+          )}
+        </div>
+
+        {onUseLocation && (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={onUseLocation}
+            disabled={locating}
+            aria-label="Use my current location"
+            title="Use my current location"
+            className="size-10 shrink-0 rounded-md border-border/80 text-muted-foreground hover:text-foreground"
+          >
+            {locating ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <LocateFixed className="size-4" aria-hidden="true" />
+            )}
+          </Button>
         )}
       </div>
-
-      {onUseLocation && (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={onUseLocation}
-          disabled={locating}
-          aria-label="Use my current location"
-          title="Use my current location"
-          className="absolute -right-11 top-0 size-10 rounded-md border-border/80 text-muted-foreground hover:text-foreground"
-        >
-          {locating ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <LocateFixed className="size-4" aria-hidden="true" />
-          )}
-        </Button>
-      )}
 
       {open && (
         <div

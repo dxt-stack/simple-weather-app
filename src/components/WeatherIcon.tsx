@@ -36,15 +36,21 @@ interface WeatherIconProps {
   code: number;
   isDay?: boolean;
   className?: string;
+  strokeWidth?: number;
 }
 
-export function WeatherIcon({ code, isDay = true, className }: WeatherIconProps) {
+export function WeatherIcon({
+  code,
+  isDay = true,
+  className,
+  strokeWidth = 1.25,
+}: WeatherIconProps) {
   const key = wmoIcon(code, isDay) as keyof typeof ICONS;
   const Icon = ICONS[key] ?? Cloud;
   return (
     <Icon
       className={cn("text-foreground", className)}
-      strokeWidth={1.25}
+      strokeWidth={strokeWidth}
       aria-hidden="true"
     />
   );

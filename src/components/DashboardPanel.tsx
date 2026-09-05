@@ -26,6 +26,7 @@ import {
   Navigation,
   RefreshCw,
   Star,
+  Sun,
   Sunrise,
   Sunset,
   Thermometer,
