@@ -171,16 +171,27 @@ export function uvLabel(uv: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Time helpers (location-local formatting from UTC ISO strings)
+// Time helpers (Open-Meteo returns location-local "wall time" strings)
 // ---------------------------------------------------------------------------
 
-/** Format a UTC ISO instant as location-local wall time, e.g. "14:00" or "2 PM". */
+/**
+ * Parse an Open-Meteo local wall-time string ("2026-09-05T14:00") as UTC-based
+ * wall time so getUTC* reads back the location's clock. Strings that already
+ * carry a zone offset are parsed as-is.
+ */
+export function parseWall(iso: string): Date {
+  if (/(?:z|[+-]\d{2}:?\d{2})$/i.test(iso)) return new Date(iso);
+  if (iso.length === 10) return new Date(`${iso}T00:00:00Z`);
+  const withSeconds = iso.length === 16 ? `${iso}:00` : iso;
+  return new Date(`${withSeconds}Z`);
+}
+
+/** Format a wall-time ISO string as the location's clock, e.g. "14:00" or "2 PM". */
 export function formatIsoTime(
   iso: string,
-  utcOffsetSeconds: number,
   style: "short" | "hour" = "short",
 ): string {
-  const d = new Date(new Date(iso).getTime() + utcOffsetSeconds * 1000);
+  const d = parseWall(iso);
   const h = d.getUTCHours();
   const m = d.getUTCMinutes();
   if (style === "hour") {
@@ -191,19 +202,20 @@ export function formatIsoTime(
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-/** Format a UTC ISO instant as location-local weekday, e.g. "Mon". */
-export function formatIsoWeekday(iso: string, utcOffsetSeconds: number, long = false): string {
-  const d = new Date(new Date(iso).getTime() + utcOffsetSeconds * 1000);
+/** Format a wall-time date string as the location's weekday, e.g. "Mon". */
+export function formatIsoWeekday(iso: string, long = false): string {
+  const d = parseWall(iso);
   return d.toLocaleDateString("en-US", {
     weekday: long ? "long" : "short",
     timeZone: "UTC",
   });
 }
 
-/** Location-local date key "YYYY-MM-DD" for a UTC ISO instant. */
-function localDateKey(iso: string, utcOffsetSeconds: number): string {
-  const d = new Date(new Date(iso).getTime() + utcOffsetSeconds * 1000);
-  return d.toISOString().slice(0, 10);
+/** The next 24 hourly entries starting at the current hour at the location. */
+export function next24Hours(hourly: HourlyPoint[]): HourlyPoint[] {
+  const idx = hourly.findIndex((h) => h.isNow);
+  if (idx >= 0) return hourly.slice(idx, idx + 24);
+  return hourly.slice(0, 24);
 }
 
 // ---------------------------------------------------------------------------
@@ -326,25 +338,27 @@ export async function fetchWeather(
   // Visibility + dew point + UV come from separate lightweight endpoints so the
   // main call stays simple and cacheable.
   const [vis, dew, uv] = await Promise.all([
-    fetchVisibility(place, units),
+    fetchVisibility(place),
     fetchDewPoint(place),
     fetchCurrentUv(place),
   ]);
 
   const utcOffset = data.utc_offset_seconds;
-  const nowIso = new Date().toISOString();
+  const nowWall = new Date(Date.now() + utcOffset * 1000);
+  const nowKey = nowWall.toISOString().slice(0, 10);
+  const nowHour = nowWall.getUTCHours();
 
-  const hourly: HourlyPoint[] = data.hourly.time.map((t, i) => ({
-    time: t,
-    temperature: data.hourly.temperature_2m[i],
-    weatherCode: data.hourly.weather_code[i],
-    precipitationProbability: data.hourly.precipitation_probability[i] ?? 0,
-    isDay: data.hourly.is_day[i] === 1,
-    isNow:
-      localDateKey(t, utcOffset) === localDateKey(nowIso, utcOffset) &&
-      new Date(t).getUTCHours() ===
-        new Date(new Date(nowIso).getTime() + utcOffset * 1000).getUTCHours(),
-  }));
+  const hourly: HourlyPoint[] = data.hourly.time.map((t, i) => {
+    const w = parseWall(t);
+    return {
+      time: t,
+      temperature: data.hourly.temperature_2m[i],
+      weatherCode: data.hourly.weather_code[i],
+      precipitationProbability: data.hourly.precipitation_probability[i] ?? 0,
+      isDay: data.hourly.is_day[i] === 1,
+      isNow: w.toISOString().slice(0, 10) === nowKey && w.getUTCHours() === nowHour,
+    };
+  });
 
   const daily: DailyPoint[] = data.daily.time.map((d, i) => ({
     date: d,
@@ -381,10 +395,7 @@ export async function fetchWeather(
   };
 }
 
-async function fetchVisibility(
-  place: Pick<Place, "lat" | "lon">,
-  _units: Units,
-): Promise<number> {
+async function fetchVisibility(place: Pick<Place, "lat" | "lon">): Promise<number> {
   try {
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${place.lat}&longitude=${place.lon}` +
