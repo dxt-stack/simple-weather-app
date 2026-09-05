@@ -6,6 +6,7 @@ on:
     paths:
       - "src/**"
       - "android/**"
+      - ".github/workflows/**"
       - "package.json"
       - "bun.lock"
       - "vite.config.ts"
@@ -25,6 +26,9 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Regenerate Convex bindings if missing (offline codegen)
+        run: bunx convex codegen --typecheck=disable || echo "codegen skipped — using committed _generated files"
 
       - name: Build web assets
         run: bun run build

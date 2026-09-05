@@ -79,7 +79,20 @@ class RootErrorBoundary extends React.Component<
   }
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+// The Convex URL is injected at build time. It is always present in the
+// Freebuff web environment; in standalone builds (e.g. the Android APK built
+// from the GitHub repo) it may be absent, so degrade gracefully instead of
+// crashing with a white screen — the weather features don't need Convex.
+const CONVEX_URL = import.meta.env.VITE_CONVEX_URL as string | undefined;
+
+function WithConvex({ children }: { children: React.ReactNode }) {
+  if (!CONVEX_URL) return <>{children}</>;
+  return (
+    <ConvexAuthProvider client={new ConvexReactClient(CONVEX_URL)}>
+      {children}
+    </ConvexAuthProvider>
+  );
+}
 
 
 
@@ -113,7 +126,7 @@ createRoot(document.getElementById("root")!).render(
       <ToolbarErrorBoundary>
         <VlyToolbar />
       </ToolbarErrorBoundary>
-      <ConvexAuthProvider client={convex}>
+      <WithConvex>
         <BrowserRouter>
           <RouteSyncer />
           <Suspense fallback={<RouteLoading />}>
@@ -132,7 +145,7 @@ createRoot(document.getElementById("root")!).render(
           </Suspense>
         </BrowserRouter>
         <Toaster />
-      </ConvexAuthProvider>
+      </WithConvex>
     </RootErrorBoundary>
   </StrictMode>,
 );
