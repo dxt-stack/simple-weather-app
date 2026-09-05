@@ -1,0 +1,8 @@
+{
+  "appId": "com.stratusweather.app",
+  "appName": "Stratus",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  }
+}

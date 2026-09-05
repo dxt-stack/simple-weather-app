@@ -15,6 +15,8 @@ import {
   type WeatherBundle,
 } from "@/lib/weather";
 import { Sun } from "lucide-react";
+import { Geolocation as CapGeolocation } from "@capacitor/geolocation";
+import { Capacitor } from "@capacitor/core";
 import { useCallback, useEffect, useState } from "react";
 
 const DEFAULT_PLACE: Place = {
@@ -92,27 +94,57 @@ export default function Dashboard() {
   };
 
   const useMyLocation = () => {
-    if (!("geolocation" in navigator)) {
-      setError("Geolocation isn't available in this browser.");
+    if (!("geolocation" in navigator) && !Capacitor.isNativePlatform()) {
+      setError("Geolocation isn't available on this device.");
       return;
     }
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const p = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-          selectPlace(p);
-          toggleSaved(p);
-        } catch {
-          setError("Couldn't look up your location.");
-        } finally {
-          setLocating(false);
-        }
-      },
-      () => {
+
+    const finish = async (
+      coords: { latitude: number; longitude: number } | null,
+    ) => {
+      if (!coords) {
         setLocating(false);
         setError("Location permission was denied or unavailable.");
-      },
+        return;
+      }
+      try {
+        const p = await reverseGeocode(coords.latitude, coords.longitude);
+        selectPlace(p);
+        toggleSaved(p);
+      } catch {
+        setError("Couldn't look up your location.");
+      } finally {
+        setLocating(false);
+      }
+    };
+
+    if (Capacitor.isNativePlatform()) {
+      // Native (Android APK): request permission, then use the Capacitor
+      // geolocation plugin which speaks to the OS location service.
+      CapGeolocation.requestPermissions()
+        .then(({ location }) => {
+          if (location !== "granted") {
+            setLocating(false);
+            setError("Location permission was denied or unavailable.");
+            return;
+          }
+          return CapGeolocation.getCurrentPosition({ timeout: 10_000 }).then(
+            (pos) =>
+              finish({
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude,
+              }),
+          );
+        })
+        .catch(() => finish(null));
+      return;
+    }
+
+    // Web fallback: browser geolocation API.
+    navigator.geolocation.getCurrentPosition(
+      (pos) => void finish(pos.coords),
+      () => void finish(null),
       { timeout: 10_000, maximumAge: 5 * 60 * 1000 },
     );
   };

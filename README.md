@@ -1,9 +1,23 @@
 # Stratus
 
-A calm, minimal weather dashboard. Current conditions, the next 24 hours as one clear temperature curve, and a 7-day forecast — no clutter, no accounts, no noise.
+A calm, minimal weather dashboard. Current conditions, the next 24 hours as one clear temperature curve, and a 7-day forecast — no clutter, no accounts, no noise. Runs as a web app and as an installable **Android APK** (Capacitor).
 
 **Live app:** <!-- TODO: add your deployed app URL here, e.g. https://your-app.freebuff.app -->
 **Repository:** https://github.com/dxt-stack/simple-weather-app
+
+## Android APK
+
+Every push to `main` triggers a GitHub Actions workflow (`.github/workflows/build-apk.yml`) that compiles a debug APK and uploads it as an artifact — grab it from the run's **Artifacts** section and sideload it (enable "Install unknown apps" for your file manager). Direct link once CI has run: `https://github.com/dxt-stack/simple-weather-app/actions`
+
+To build locally instead (requires JDK 21 + Android SDK):
+
+```bash
+bun install
+bun run cap:apk      # debug APK  ->  android/app/build/outputs/apk/debug/app-debug.apk
+bun run cap:release  # release APK (needs signing config to install)
+```
+
+Geolocation uses the Capacitor plugin on Android (with the browser API as web fallback); the manifest already declares `ACCESS_COARSE_LOCATION` / `ACCESS_FINE_LOCATION`.
 
 ## Features
 
