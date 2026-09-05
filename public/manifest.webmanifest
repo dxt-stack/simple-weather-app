@@ -1,7 +1,7 @@
 {
-  "name": "freebuff.com application",
-  "short_name": "freebuff.com",
-  "description": "freebuff.com application",
+  "name": "Stratus",
+  "short_name": "Stratus",
+  "description": "A calm, minimal weather dashboard.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

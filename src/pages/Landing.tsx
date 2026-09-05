@@ -35,7 +35,7 @@ export default function Landing() {
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6 sm:px-8">
         <div className="flex items-center gap-2">
           <CloudSun className="size-4 text-foreground" strokeWidth={1.25} aria-hidden="true" />
-          <span className="text-sm font-medium tracking-tight">Fairweather</span>
+          <span className="text-sm font-medium tracking-tight">Stratus</span>
         </div>
         <Link
           to="/dashboard"
@@ -69,7 +69,7 @@ export default function Landing() {
             transition={{ duration: 0.55, delay: 0.2 }}
             className="mt-6 max-w-xl text-base leading-7 text-muted-foreground"
           >
-            Fairweather is a calm weather dashboard for everyone: current
+            Stratus is a calm weather dashboard for everyone: current
             conditions, the next 24 hours as one clear curve, and a week of
             highs and lows. No clutter, no accounts, no noise.
           </motion.p>
@@ -160,7 +160,7 @@ export default function Landing() {
       <footer className="border-t border-border/70">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6 sm:px-8">
           <p className="text-xs text-muted-foreground/70">
-            © {new Date().getFullYear()} Fairweather
+            © {new Date().getFullYear()} Stratus
           </p>
           <p className="text-xs text-muted-foreground/70">Weather, plainly</p>
         </div>

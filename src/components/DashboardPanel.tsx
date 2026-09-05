@@ -349,7 +349,7 @@ export function DashboardPanel({
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Weather, plainly
+            Stratus
           </span>
           <div className="flex items-center gap-1">
             <Button

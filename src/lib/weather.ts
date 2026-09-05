@@ -441,9 +441,9 @@ async function fetchCurrentUv(place: Pick<Place, "lat" | "lon">): Promise<number
 // Saved places (localStorage)
 // ---------------------------------------------------------------------------
 
-const PLACES_KEY = "fairweather.places.v1";
-const UNITS_KEY = "fairweather.units.v1";
-const LAST_KEY = "fairweather.last.v1";
+const PLACES_KEY = "stratus.places.v1";
+const UNITS_KEY = "stratus.units.v1";
+const LAST_KEY = "stratus.last.v1";
 
 export function loadPlaces(): Place[] {
   try {

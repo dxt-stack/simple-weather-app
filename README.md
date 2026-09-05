@@ -1,4 +1,4 @@
-# Fairweather
+# Stratus
 
 A calm, minimal weather dashboard. Current conditions, the next 24 hours as one clear temperature curve, and a 7-day forecast — no clutter, no accounts, no noise.
 
